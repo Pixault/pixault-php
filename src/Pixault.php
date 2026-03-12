@@ -258,6 +258,44 @@ final class Pixault
         return json_decode($response, true);
     }
 
+    // ── EPS Operations ──
+
+    /**
+     * List derived assets (rasterized PNGs, SVGs, splits) for an EPS parent.
+     *
+     * @return array<int, array{imageId: string, derivationType: ?string, width: int, height: int, sizeBytes: int, contentType: string, uploadedAt: string}>
+     */
+    public function listDerived(string $project, string $imageId): array
+    {
+        $url = "{$this->baseUrl}/api/{$project}/{$imageId}/derived";
+        $response = $this->httpGet($url);
+        return $response !== null ? json_decode($response, true) : [];
+    }
+
+    /**
+     * Get the processing status for an EPS file. Returns null if no job found.
+     *
+     * @return array{id: string, source: string, status: string, totalAssets: int, processedAssets: int, succeededAssets: int, failedAssets: int, createdAt: string, startedAt: ?string, completedAt: ?string}|null
+     */
+    public function getProcessingStatus(string $project, string $imageId): ?array
+    {
+        $url = "{$this->baseUrl}/api/{$project}/{$imageId}/processing-status";
+        $response = $this->httpGet($url);
+        return $response !== null ? json_decode($response, true) : null;
+    }
+
+    /** Trigger auto-split to extract individual designs from an EPS file. */
+    public function splitDesigns(string $project, string $imageId): void
+    {
+        $this->httpPost("{$this->baseUrl}/api/{$project}/{$imageId}/split");
+    }
+
+    /** Trigger vector SVG extraction from an EPS file. */
+    public function extractSvg(string $project, string $imageId): void
+    {
+        $this->httpPost("{$this->baseUrl}/api/{$project}/{$imageId}/extract-svg");
+    }
+
     // ── Internal ──
 
     private function httpGet(string $url): ?string
@@ -282,6 +320,33 @@ final class Pixault
         }
 
         return $response !== false ? $response : null;
+    }
+
+    private function httpPost(string $url): void
+    {
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => '',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => $this->buildHeaders(),
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($response === false) {
+            throw new PixaultException("Request failed: {$error}");
+        }
+
+        if ($httpCode >= 400) {
+            $body = json_decode($response, true);
+            $message = $body['error'] ?? "Request failed with status {$httpCode}";
+            throw new PixaultException($message, $httpCode);
+        }
     }
 
     /** @return string[] */
