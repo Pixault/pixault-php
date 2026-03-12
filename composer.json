@@ -1,0 +1,27 @@
+{
+    "name": "pixault/pixault-php",
+    "description": "Official PHP SDK for the Pixault image CDN",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Endpoint Systems"
+        }
+    ],
+    "require": {
+        "php": ">=8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pixault\\": "src/"
+        }
+    },
+    "keywords": [
+        "pixault",
+        "image",
+        "cdn",
+        "upload",
+        "resize",
+        "transform"
+    ]
+}
