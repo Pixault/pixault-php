@@ -21,8 +21,7 @@ use Pixault\Pixault;
 $pixault = new Pixault([
     'base_url' => 'https://img.pixault.io',
     'default_project' => 'my-project',
-    'client_id' => 'px_cl_a1b2c3d4',
-    'client_secret' => 'pk_...',
+    'api_key' => 'pk_your_secret_key',
 ]);
 
 // Generate an optimized image URL
@@ -68,8 +67,7 @@ $url = $pixault->image('img_01JKABC')
 |--------|-------------|----------|
 | `base_url` | Pixault CDN base URL | Yes |
 | `default_project` | Default project ID | No |
-| `client_id` | API key client ID (`px_cl_...`) | No |
-| `client_secret` | API key secret (`pk_...`) | No |
+| `api_key` | API secret key (`pk_...`) | No |
 
 ## Documentation
 

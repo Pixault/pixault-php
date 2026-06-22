@@ -11,8 +11,7 @@ namespace Pixault;
  *   $pixault = new Pixault([
  *       'base_url' => 'https://img.pixault.io',
  *       'default_project' => 'barber',
- *       'client_id' => 'px_cl_a1b2c3d4',
- *       'client_secret' => 'pk_...',
+ *       'api_key' => 'pk_your_secret_key',
  *   ]);
  *
  *   // Generate URLs
@@ -28,20 +27,16 @@ final class Pixault
 {
     private string $baseUrl;
     private ?string $defaultProject;
-    private ?string $clientId;
-    private ?string $clientSecret;
     private ?string $apiKey;
 
     /**
-     * @param array{base_url: string, default_project?: string, client_id?: string, client_secret?: string, api_key?: string} $config
+     * @param array{base_url: string, default_project?: string, api_key?: string} $config
      */
     public function __construct(array $config)
     {
         $this->baseUrl = rtrim($config['base_url'], '/');
         $this->defaultProject = $config['default_project'] ?? null;
-        $this->clientId = $config['client_id'] ?? null;
-        $this->clientSecret = $config['client_secret'] ?? null;
-        $this->apiKey = $config['api_key'] ?? null; // Legacy fallback
+        $this->apiKey = $config['api_key'] ?? null;
     }
 
     // ── URL builder ──
@@ -353,13 +348,7 @@ final class Pixault
     private function buildHeaders(): array
     {
         $headers = [];
-        if ($this->clientId !== null) {
-            $headers[] = "X-Client-Id: {$this->clientId}";
-        }
-        if ($this->clientSecret !== null) {
-            $headers[] = "X-Client-Secret: {$this->clientSecret}";
-        } elseif ($this->apiKey !== null) {
-            // Legacy fallback
+        if ($this->apiKey !== null) {
             $headers[] = "X-Api-Key: {$this->apiKey}";
         }
         return $headers;
