@@ -1,0 +1,57 @@
+name: CI
+
+# Packagist needs no publish workflow: it reads this repository directly and
+# derives versions from git tags, so releasing is "push a vX.Y.Z tag". That makes
+# a bad tag immediately public, with no build step in between to catch it -- so
+# this runs the checks a publish step would otherwise have run.
+#
+# ONE-TIME SETUP on packagist.org: Submit -> https://github.com/Pixault/pixault-php,
+# then enable the GitHub hook so new tags are picked up automatically.
+
+on:
+  push:
+    branches: [main]
+    tags: ['v[0-9]+.[0-9]+.[0-9]+*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # composer.json requires php >=8.1; check the floor and a current release.
+        php: ['8.1', '8.3']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Install
+        run: composer install --prefer-dist --no-progress
+
+      - name: Lint every source file
+        shell: bash
+        run: |
+          set -euo pipefail
+          find src -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Autoload check
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r '
+            require "vendor/autoload.php";
+            foreach (["Pixault\\Pixault","Pixault\\UrlBuilder","Pixault\\PixaultException"] as $c) {
+              if (!class_exists($c)) { fwrite(STDERR, "missing class $c\n"); exit(1); }
+              echo "loaded $c\n";
+            }
+          '
