@@ -1,12 +1,11 @@
 name: CI
 
-# Packagist needs no publish workflow: it reads this repository directly and
-# derives versions from git tags, so releasing is "push a vX.Y.Z tag". That makes
-# a bad tag immediately public, with no build step in between to catch it -- so
-# this runs the checks a publish step would otherwise have run.
+# This SDK is consumed straight from GitHub, not from Packagist -- it is
+# deliberately not submitted there. Without a registry release to act as a gate,
+# main is what people install, so it has to be verified on every push.
 #
-# ONE-TIME SETUP on packagist.org: Submit -> https://github.com/Pixault/pixault-php,
-# then enable the GitHub hook so new tags are picked up automatically.
+# Consumers install it as a VCS repository in composer.json:
+#   "repositories": [{ "type": "vcs", "url": "https://github.com/Pixault/pixault-php" }]
 
 on:
   push:
